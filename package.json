@@ -1,10 +1,10 @@
 {
-  "name": "voxel-creative-inventory",
+  "name": "voxel-inventory-creative",
   "description": "",
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "git@github.com:deathcap/voxel-creative-inventory.git"
+    "url": "git@github.com:deathcap/voxel-inventory-creative.git"
   },
   "keywords": [
     "voxel"

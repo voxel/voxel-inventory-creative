@@ -1,4 +1,4 @@
-# voxel-creative-inventory
+# voxel-inventory-creative
 
 ## License
 
