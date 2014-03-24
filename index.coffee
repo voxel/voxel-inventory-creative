@@ -32,8 +32,23 @@ class CreativeInventoryPlugin extends InventoryDialog
     super open
 
   addButtons: (categories) ->
+    # sort categories, items and blocks always first
+    categoryNames = Object.keys(categories)
+    categoryNames.sort (a, b) ->
+      a = '0items' if a == 'items'
+      a = '1blocks' if a == 'blocks'
+      b = '0items' if b == 'items'
+      b = '1blocks' if b == 'blocks'
+
+      if a < b
+        -1
+      else if a > b
+        1
+      else
+        0
+
     # TODO: real tabs?
-    Object.keys(categories).forEach (category) =>
+    categoryNames.forEach (category) =>
       button = document.createElement 'button'
       button.textContent = category # TODO: category icons
       button.addEventListener 'click', () =>

@@ -56,7 +56,30 @@
     };
 
     CreativeInventoryPlugin.prototype.addButtons = function(categories) {
-      return Object.keys(categories).forEach((function(_this) {
+      var categoryNames;
+      categoryNames = Object.keys(categories);
+      categoryNames.sort(function(a, b) {
+        if (a === 'items') {
+          a = '0items';
+        }
+        if (a === 'blocks') {
+          a = '1blocks';
+        }
+        if (b === 'items') {
+          b = '0items';
+        }
+        if (b === 'blocks') {
+          b = '1blocks';
+        }
+        if (a < b) {
+          return -1;
+        } else if (a > b) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+      return categoryNames.forEach((function(_this) {
         return function(category) {
           var button;
           button = document.createElement('button');
