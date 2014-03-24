@@ -15,17 +15,8 @@ class CreativeInventoryPlugin extends InventoryDialog
     @thisInventory = new Inventory(10, 3) # TODO: multi-paged inventory
     @thisIW = new InventoryWindow {inventory:@thisInventory, registry:@registry}
 
-    # TODO: real tabs
-    buttons = document.createElement 'div'
-    ['items', 'blocks'].forEach (category) =>
-      button = document.createElement 'button'
-      button.textContent = category # TODO: category icons
-      button.addEventListener 'click', () =>
-        @populateCategory category
-
-      buttons.appendChild button
-
-    div.appendChild buttons
+    @buttons = document.createElement 'div'
+    div.appendChild @buttons
     div.appendChild @thisIW.createContainer()
 
     super game, upper: [div]
@@ -34,24 +25,56 @@ class CreativeInventoryPlugin extends InventoryDialog
   disable: () ->
 
   open: () ->
-    @populateCategory @activeCategory
+    categories = @scanCategories()
+    @addButtons categories
+    @populateCategory categories, @activeCategory
 
     super open
 
-  populateCategory: (category) ->
-    category ?= 'items'
+  addButtons: (categories) ->
+    # TODO: real tabs?
+    Object.keys(categories).forEach (category) =>
+      button = document.createElement 'button'
+      button.textContent = category # TODO: category icons
+      button.addEventListener 'click', () =>
+        # rescan and populate
+        @populateCategory @scanCategories(), category
 
+      @buttons.appendChild button
+
+  # Scan all items/blocks and return object with categories to item names
+  # Note: items/blocks can be registered at any time! Recall for latest data.
+  scanCategories: () ->
+    categories = {}
+
+    # TODO: add a proper API in voxel-registry to get all items and blocks
+    for name, props of @registry.itemProps
+      category = props.creativeTab ? 'items'
+
+      categories[category] ?= []
+      categories[category].push name
+
+    for props, blockIndex in @registry.blockProps
+      continue if blockIndex == 0 # skip air
+
+      name = @registry.getBlockName blockIndex
+      category = props.creativeTab ? 'blocks'
+
+      categories[category] ?= []
+      categories[category].push name
+
+    # TODO: sort alphabetically?
+
+    console.log categories
+    return categories
+
+  populateCategory: (categories, category) ->
+    category ?= 'items'
     @activeCategory = category
 
     @thisInventory.clear()
 
-    if category == 'items'
-      for item, i in Object.keys(@registry.itemProps)
-        @thisInventory.set i, new ItemPile(item, Infinity)
-    else if category == 'blocks'
-      for i in [1..@registry.blockProps.length]
-        name = @registry.getBlockName i
-        @thisInventory.set i - 1, new ItemPile(name, Infinity)
-      # TODO: read categories from item properties
-    else
-      console.log 'TODO',category
+    items = categories[category] ? []
+
+    for name, i in items
+      @thisInventory.set i, new ItemPile(name, Infinity)
