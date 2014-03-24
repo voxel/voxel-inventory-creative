@@ -10,6 +10,7 @@
     "voxel"
   ],
   "dependencies": {
+    "voxel-inventory-dialog": "^0.4.0"
   },
   "peerDependencies": {
   },
