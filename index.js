@@ -69,6 +69,7 @@
         category = 'items';
       }
       this.activeCategory = category;
+      this.thisInventory.clear();
       if (category === 'items') {
         _ref = Object.keys(this.registry.itemProps);
         _results = [];

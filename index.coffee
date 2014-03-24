@@ -43,6 +43,8 @@ class CreativeInventoryPlugin extends InventoryDialog
 
     @activeCategory = category
 
+    @thisInventory.clear()
+
     if category == 'items'
       for item, i in Object.keys(@registry.itemProps)
         @thisInventory.set i, new ItemPile(item, Infinity)
