@@ -57,6 +57,9 @@
 
     CreativeInventoryPlugin.prototype.addButtons = function(categories) {
       var categoryNames;
+      while (this.buttons.firstChild) {
+        this.buttons.removeChild(this.buttons.firstChild);
+      }
       categoryNames = Object.keys(categories);
       categoryNames.sort(function(a, b) {
         if (a === 'items') {
@@ -93,7 +96,7 @@
     };
 
     CreativeInventoryPlugin.prototype.scanCategories = function() {
-      var blockIndex, categories, category, name, props, _i, _len, _ref, _ref1, _ref2, _ref3;
+      var blockIndex, categories, category, items, name, props, _i, _len, _ref, _ref1, _ref2, _ref3;
       categories = {};
       _ref = this.registry.itemProps;
       for (name in _ref) {
@@ -116,6 +119,10 @@
           categories[category] = [];
         }
         categories[category].push(name);
+      }
+      for (category in categories) {
+        items = categories[category];
+        items.sort();
       }
       console.log(categories);
       return categories;

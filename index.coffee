@@ -32,6 +32,8 @@ class CreativeInventoryPlugin extends InventoryDialog
     super open
 
   addButtons: (categories) ->
+    @buttons.removeChild @buttons.firstChild while @buttons.firstChild
+
     # sort categories, items and blocks always first
     categoryNames = Object.keys(categories)
     categoryNames.sort (a, b) ->
@@ -78,7 +80,10 @@ class CreativeInventoryPlugin extends InventoryDialog
       categories[category] ?= []
       categories[category].push name
 
-    # TODO: sort alphabetically?
+    # TODO: maybe leave unsorted, so items from the same plugin are grouped together?
+    # or perhaps better yet, somehow track the plugin that registered each item?
+    for category, items of categories
+      items.sort()
 
     console.log categories
     return categories
