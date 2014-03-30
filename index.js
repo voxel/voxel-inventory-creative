@@ -20,7 +20,7 @@
     __extends(CreativeInventoryPlugin, _super);
 
     function CreativeInventoryPlugin(game, opts) {
-      var div, _ref;
+      var div, _ref, _ref1;
       this.game = game;
       this.registry = (function() {
         if ((_ref = game.plugins.get('voxel-registry')) != null) {
@@ -29,6 +29,7 @@
           throw new Error('voxel-creative-inventory requires voxel-registry');
         }
       })();
+      this.hideHiddenItems = (_ref1 = opts.hideHiddenItems) != null ? _ref1 : true;
       div = document.createElement('div');
       this.thisInventory = new Inventory(10, 3);
       this.thisIW = new InventoryWindow({
@@ -102,6 +103,9 @@
       for (name in _ref) {
         props = _ref[name];
         category = (_ref1 = props.creativeTab) != null ? _ref1 : 'items';
+        if (category === false) {
+          continue;
+        }
         if (categories[category] == null) {
           categories[category] = [];
         }
@@ -115,6 +119,9 @@
         }
         name = this.registry.getBlockName(blockIndex);
         category = (_ref3 = props.creativeTab) != null ? _ref3 : 'blocks';
+        if (category === false && this.hideHiddenItems) {
+          continue;
+        }
         if (categories[category] == null) {
           categories[category] = [];
         }

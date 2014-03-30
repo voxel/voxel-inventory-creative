@@ -10,6 +10,8 @@ class CreativeInventoryPlugin extends InventoryDialog
   constructor: (@game, opts) ->
     @registry = game.plugins.get('voxel-registry') ? throw new Error('voxel-creative-inventory requires voxel-registry')
 
+    this.hideHiddenItems = opts.hideHiddenItems ? true
+
     div = document.createElement 'div'
 
     @thisInventory = new Inventory(10, 3) # TODO: multi-paged inventory
@@ -65,17 +67,22 @@ class CreativeInventoryPlugin extends InventoryDialog
     categories = {}
 
     # TODO: add a proper API in voxel-registry to get all items and blocks
+
+    # scan for all categories
     for name, props of @registry.itemProps
       category = props.creativeTab ? 'items'
+      continue if category == false
 
       categories[category] ?= []
       categories[category].push name
 
+    # group items into their category
     for props, blockIndex in @registry.blockProps
       continue if blockIndex == 0 # skip air
 
       name = @registry.getBlockName blockIndex
       category = props.creativeTab ? 'blocks'
+      continue if category == false and this.hideHiddenItems # special case to hide (for internal technical blocks, etc.)
 
       categories[category] ?= []
       categories[category].push name
