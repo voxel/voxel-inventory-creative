@@ -1,7 +1,7 @@
 {
   "name": "voxel-inventory-creative",
   "description": "inventory dialog with an infinite supply of all items (voxel.js plugin)",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:deathcap/voxel-inventory-creative.git"
@@ -15,7 +15,6 @@
     "inventory": "^0.1.1",
     "itempile": "^0.2.2"
   },
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "license": "MIT"
 }
