@@ -5,6 +5,8 @@ InventoryDialog = (require 'voxel-inventory-dialog').InventoryDialog
 ItemPile = require 'itempile'
 
 module.exports = (game, opts) -> new CreativeInventoryPlugin(game, opts)
+module.exports.pluginInfo =
+  loadAfter: ['voxel-registry', 'voxel-carry']
 
 class CreativeInventoryPlugin extends InventoryDialog
   constructor: (@game, opts) ->
@@ -15,7 +17,8 @@ class CreativeInventoryPlugin extends InventoryDialog
     div = document.createElement 'div'
 
     @thisInventory = new Inventory(10, 3) # TODO: multi-paged inventory
-    @thisIW = new InventoryWindow {inventory:@thisInventory, registry:@registry}
+    playerInventory = game.plugins.get('voxel-carry')?.inventory ? throw new Error('voxel-inventory-creative requires voxel-carry')
+    @thisIW = new InventoryWindow {inventory:@thisInventory, registry:@registry, linkedInventory:playerInventory}
 
     @buttons = document.createElement 'div'
     div.appendChild @buttons
