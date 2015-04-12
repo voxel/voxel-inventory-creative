@@ -107,4 +107,5 @@ class CreativeInventoryPlugin extends InventoryDialog
     items = categories[category] ? []
 
     for name, i in items
-      @thisInventory.set i, new ItemPile(name, Infinity)
+      number = @registry.getProp('maxStack') or 64
+      @thisInventory.set i, new ItemPile(name, number)

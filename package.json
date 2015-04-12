@@ -1,7 +1,7 @@
 {
   "name": "voxel-inventory-creative",
   "description": "inventory dialog with an infinite supply of all items (voxel.js plugin)",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "inventory-creative.coffee",
   "repository": {
     "type": "git",
