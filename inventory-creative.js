@@ -1,110 +1,144 @@
+'use strict';
 
-Inventory = require 'inventory'
-InventoryWindow = require 'inventory-window'
-InventoryDialog = (require 'voxel-inventory-dialog').InventoryDialog
-ItemPile = require 'itempile'
+const Inventory = require('inventory');
+const InventoryWindow = require('inventory-window');
+const InventoryDialog = require('voxel-inventory-dialog').InventoryDialog;
+const ItemPile = require('itempile');
 
-module.exports = (game, opts) -> new CreativeInventoryPlugin(game, opts)
-module.exports.pluginInfo =
+module.exports = (game, opts) => new CreativeInventoryPlugin(game, opts);
+module.exports.pluginInfo = {
   loadAfter: ['voxel-registry', 'voxel-carry']
+}
 
-class CreativeInventoryPlugin extends InventoryDialog
-  constructor: (@game, opts) ->
-    @registry = game.plugins.get('voxel-registry') ? throw new Error('voxel-creative-inventory requires voxel-registry')
+class CreativeInventoryPlugin extends InventoryDialog {
+  constructor(game, opts) {
+    const registry = game.plugins.get('voxel-registry');
+    if (!registry) throw new Error('voxel-creative-inventory requires voxel-registry')
 
-    this.hideHiddenItems = opts.hideHiddenItems ? true
+    const div = document.createElement('div');
 
-    div = document.createElement 'div'
+    const thisInventory = new Inventory(10, 3); // TODO: multi-paged inventory
+    if (!game.plugins.get('voxel-carry')) throw new Error('voxel-inventory-creative requires voxel-carry');
+    const playerInventory = game.plugins.get('voxel-carry').inventory;
+    const thisIW = new InventoryWindow({inventory:thisInventory, registry:registry, linkedInventory:playerInventory});
 
-    @thisInventory = new Inventory(10, 3) # TODO: multi-paged inventory
-    playerInventory = game.plugins.get('voxel-carry')?.inventory ? throw new Error('voxel-inventory-creative requires voxel-carry')
-    @thisIW = new InventoryWindow {inventory:@thisInventory, registry:@registry, linkedInventory:playerInventory}
+    const buttons = document.createElement('div');
+    div.appendChild(buttons);
+    div.appendChild(thisIW.createContainer());
 
-    @buttons = document.createElement 'div'
-    div.appendChild @buttons
-    div.appendChild @thisIW.createContainer()
+    this.game = game;
+    this.hideHiddenItems = opts.hideHiddenItems !== undefined ? opts.hideHiddenItems : true;
+    this.registry = registry;
+    this.thisInventory = thisInventory;
+    this.thisIW = thisIW;
+    this.buttons = buttons;
 
-    super game, upper: [div]
+    super(game, {upper: [div]});
+  }
 
-  enable: () ->
-  disable: () ->
+  enable() {
+  }
 
-  open: () ->
-    categories = @scanCategories()
-    @addButtons categories
-    @populateCategory categories, @activeCategory
+  disable() {
+  }
 
-    super open
+  open() {
+    const categories = this.scanCategories();
+    this.addButtons(categories);
+    this.populateCategory(categories, this.activeCategory);
 
-  addButtons: (categories) ->
-    @buttons.removeChild @buttons.firstChild while @buttons.firstChild
+    super.open();
+  }
 
-    # sort categories, items and blocks always first
-    categoryNames = Object.keys(categories)
-    categoryNames.sort (a, b) ->
-      a = '0items' if a == 'items'
-      a = '1blocks' if a == 'blocks'
-      b = '0items' if b == 'items'
-      b = '1blocks' if b == 'blocks'
+  addButtons(categories) {
+    while(this.buttons.firstChild) {
+      this.buttons.removeChild(this.buttons.firstChild);
+    }
 
-      if a < b
-        -1
-      else if a > b
-        1
-      else
-        0
+    // sort categories, items and blocks always first
+    const categoryNames = Object.keys(categories);
+    categoryNames.sort((a, b) => {
+      if (a === 'items') a = '0items';
+      if (a === 'blocks') a = '1blocks';
+      if (b === 'items') b = '0items';
+      if (b === 'blocks') b = '1blocks';
 
-    # TODO: real tabs?
-    categoryNames.forEach (category) =>
-      button = document.createElement 'button'
-      button.textContent = category # TODO: category icons
-      button.addEventListener 'click', () =>
-        # rescan and populate
-        @populateCategory @scanCategories(), category
+      if (a < b) {
+        return -1;
+      } else if (a > b) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
 
-      @buttons.appendChild button
+    // TODO: real tabs?
+    categoryNames.forEach((category) => {
+      const button = document.createElement('button');
+      button.textContent = category; // TODO: category icons
+      button.addEventListener('click', () => {
+        //  rescan and populate
+        this.populateCategory(this.scanCategories(), category);
+      });
 
-  # Scan all items/blocks and return object with categories to item names
-  # Note: items/blocks can be registered at any time! Recall for latest data.
-  scanCategories: () ->
-    categories = {}
+      this.buttons.appendChild(button);
+    })
+  }
 
-    # TODO: add a proper API in voxel-registry to get all items and blocks
+  // Scan all items/blocks and return object with categories to item names
+  // Note: items/blocks can be registered at any time! Recall for latest data.
+  scanCategories() {
+    const categories = {};
 
-    # scan for all categories
-    for name, props of @registry.itemProps
-      category = props.creativeTab ? 'items'
-      continue if category == false
+    // TODO: add a proper API in voxel-registry to get all items and blocks
 
-      categories[category] ?= []
-      categories[category].push name
+    // scan for all categories
+    for (let name of Object.keys(this.registry.itemProps)) {
+      const props = this.registry.itemProps[name];
 
-    # group items into their category
-    for props, blockIndex in @registry.blockProps
-      continue if blockIndex == 0 # skip air
+      const category = props.creativeTab !== undefined ? props.creativeTab : 'items';
+      if (category === false) continue ;
 
-      name = @registry.getBlockName blockIndex
-      category = props.creativeTab ? 'blocks'
-      continue if category == false and this.hideHiddenItems # special case to hide (for internal technical blocks, etc.)
+      if (!categories[category]) categories[category] = [];
+      categories[category].push(name);
+    }
 
-      categories[category] ?= []
-      categories[category].push name
+    // group items into their category
+    for (let props of Object.keys(this.registry.blockProps)) {
+      const blockIndex = this.registry.blockProps[props];
+      if (blockIndex == 0) continue; // skip air
 
-    # TODO: maybe leave unsorted, so items from the same plugin are grouped together?
-    # or perhaps better yet, somehow track the plugin that registered each item?
-    for category, items of categories
-      items.sort()
+      const name = this.registry.getBlockName(blockIndex);
+      category = props.creativeTab !== undefined ? props.creativeTab : 'blocks';
+      if (category === false && this.hideHiddenItems) continue; // special case to hide (for internal technical blocks, etc.)
 
-    console.log categories
-    return categories
+      if (!categories[category]) categories[category] = [];
+      categories[category].push(name);
+    }
 
-  populateCategory: (categories, category) ->
-    category ?= 'items'
-    @activeCategory = category
+    // TODO: maybe leave unsorted, so items from the same plugin are grouped together?
+    // or perhaps better yet, somehow track the plugin that registered each item?
+    for (let category of categories) {
+      const items = categories[category];
+      items.sort();
+    }
 
-    @thisInventory.clear()
+    console.log(categories);
+    return categories;
+  }
 
-    items = categories[category] ? []
+  populateCategory(categories, category) {
+    if (!category) category = 'items';
+    this.activeCategory = category;
 
-    for name, i in items
-      @thisInventory.set i, new ItemPile(name, Infinity)
+    this.thisInventory.clear();
+
+    items = categories[category];
+    if (!items) items = [];
+
+    for (let i = 0; i < items.length; ++i) {
+      const name = items[i];
+      this.thisInventory.set(i, new ItemPile(name, Infinity));
+    }
+  }
+}

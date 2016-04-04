@@ -14,16 +14,10 @@
     "creative"
   ],
   "dependencies": {
-    "coffeeify": "^1.0.0",
-    "inventory": "^1.0.0",
-    "inventory-window": "^1.0.0",
-    "itempile": "^1.0.1",
-    "voxel-inventory-dialog": "^1.0.0"
-  },
-  "browserify": {
-    "transform": [
-      "coffeeify"
-    ]
+    "inventory": "^2.0.0",
+    "inventory-window": "^2.0.0",
+    "itempile": "^2.0.0",
+    "voxel-inventory-dialog": "^3.0.0"
   },
   "license": "MIT"
 }
