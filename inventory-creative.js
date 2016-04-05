@@ -26,14 +26,14 @@ class CreativeInventoryPlugin extends InventoryDialog {
     div.appendChild(buttons);
     div.appendChild(thisIW.createContainer());
 
+    super(game, {upper: [div]});
+
     this.game = game;
     this.hideHiddenItems = opts.hideHiddenItems !== undefined ? opts.hideHiddenItems : true;
     this.registry = registry;
     this.thisInventory = thisInventory;
     this.thisIW = thisIW;
     this.buttons = buttons;
-
-    super(game, {upper: [div]});
   }
 
   enable() {
