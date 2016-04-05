@@ -97,19 +97,19 @@ class CreativeInventoryPlugin extends InventoryDialog {
       const props = this.registry.itemProps[name];
 
       const category = props.creativeTab !== undefined ? props.creativeTab : 'items';
-      if (category === false) continue ;
+      if (category === false) continue;
 
       if (!categories[category]) categories[category] = [];
       categories[category].push(name);
     }
 
     // group items into their category
-    for (let props of Object.keys(this.registry.blockProps)) {
-      const blockIndex = this.registry.blockProps[props];
-      if (blockIndex == 0) continue; // skip air
+    for (let blockIndex of Object.keys(this.registry.blockProps)) {
+      if ((blockIndex|0) === 0) continue; // skip air
+      const props = this.registry.blockProps[blockIndex];
 
       const name = this.registry.getBlockName(blockIndex);
-      category = props.creativeTab !== undefined ? props.creativeTab : 'blocks';
+      const category = props.creativeTab !== undefined ? props.creativeTab : 'blocks';
       if (category === false && this.hideHiddenItems) continue; // special case to hide (for internal technical blocks, etc.)
 
       if (!categories[category]) categories[category] = [];
@@ -118,7 +118,7 @@ class CreativeInventoryPlugin extends InventoryDialog {
 
     // TODO: maybe leave unsorted, so items from the same plugin are grouped together?
     // or perhaps better yet, somehow track the plugin that registered each item?
-    for (let category of categories) {
+    for (let category of Object.keys(categories)) {
       const items = categories[category];
       items.sort();
     }
@@ -133,7 +133,7 @@ class CreativeInventoryPlugin extends InventoryDialog {
 
     this.thisInventory.clear();
 
-    items = categories[category];
+    const items = categories[category];
     if (!items) items = [];
 
     for (let i = 0; i < items.length; ++i) {
